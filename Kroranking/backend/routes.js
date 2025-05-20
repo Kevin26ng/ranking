@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import { getAllDebaters, createDebater, getDebaterById, updateDebater, deleteDebater, loginAdmin,submitMatchResult } from "./controllers.js";
 import  verifyToken  from "./authMiddleware.js";
 import jwt from 'jsonwebtoken';
