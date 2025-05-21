@@ -10,10 +10,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onAuthenticate }) => {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
 
+    // Hardcoded backend URL
+  const BACKEND_URL = "https://kroranking.onrender.com";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch("http://localhost:3000/admin/login", {
+      const response = await fetch(`${BACKEND_URL}/admin/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

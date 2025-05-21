@@ -22,6 +22,9 @@ interface AlertState {
   message: string;
 }
 
+
+ const BACKEND_URL = "https://kroranking.onrender.com";
+
 // Add this authFetch utility function at the top level
 async function authFetch(input: RequestInfo, init?: RequestInit) {
   const token = localStorage.getItem('authToken');
@@ -40,7 +43,7 @@ async function authFetch(input: RequestInfo, init?: RequestInit) {
 
     // If token expired (401), try to refresh
     if (response.status === 401) {
-      const refreshResponse = await fetch('http://localhost:3000/auth/refresh', {
+      const refreshResponse = await fetch(`${BACKEND_URL}/auth/refresh`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -99,7 +102,7 @@ export default function AdminPanel() {
   const fetchDebaters = async () => {
     try {
       setLoading(true);
-      const response = await authFetch("http://localhost:3000/debaters");
+      const response = await authFetch(`${BACKEND_URL}/debaters`);
       
       if (!response.ok) {
         throw new Error("Failed to fetch debaters");
@@ -130,7 +133,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch("http://localhost:3000/debaters", {
+      const response = await authFetch(`${BACKEND_URL}/debaters`, {
         method: "POST",
         body: JSON.stringify(newDebater),
       });
@@ -156,7 +159,7 @@ export default function AdminPanel() {
       const debater = debaters.find((d) => d._id === id);
       if (!debater) return;
 
-      const response = await authFetch(`http://localhost:3000/debaters/${id}`, {
+      const response = await authFetch(`${BACKEND_URL}/debaters/${id}`, {
         method: "PUT",
         body: JSON.stringify({ name: debater.name, rating: newRating }),
       });
@@ -193,7 +196,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch(`http://localhost:3000/debaters/${editingDebater}`, {
+      const response = await authFetch(`${BACKEND_URL}/debaters/${editingDebater}`, {
         method: "PUT",
         body: JSON.stringify(editForm),
       });
@@ -228,7 +231,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch(`http://localhost:3000/debaters/${id}`, {
+      const response = await authFetch(`${BACKEND_URL}/debaters/${id}`, {
         method: "DELETE",
       });
 
@@ -305,7 +308,7 @@ export default function AdminPanel() {
             debater.rating + K * (govResult - govExpWin) + 1.5 * (actualSpeakerScore - expectedSpeakerScore),
         )
 
-        await fetch(`http://localhost:3000/debaters/${debater._id}`, {
+        await fetch(`${BACKEND_URL}/debaters/${debater._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -326,7 +329,7 @@ export default function AdminPanel() {
             debater.rating + K * (oppResult - oppExpWin) + 1.5 * (actualSpeakerScore - expectedSpeakerScore),
         )
 
-        await fetch(`http://localhost:3000/debaters/${debater._id}`, {
+        await fetch(`${BACKEND_URL}/debaters/${debater._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
