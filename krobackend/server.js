@@ -61,9 +61,14 @@ const createDefaultAdmin = async () => {
 
 app.use(cookieParser());
 
+const allowedOrigins = [
+  'https://kroranking.netlify.app',
+  'http://localhost:5173' // For local development
+];
+
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: allowedOrigins,
   methods: ["GET", "POST","DELETE", "PUT"],
   credentials: true
 }));
