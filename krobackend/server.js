@@ -63,7 +63,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   'https://kroranking.netlify.app',
-  'http://localhost:5173' // For local development
+  //'http://localhost:5173' 
 ];
 
 // Middleware
