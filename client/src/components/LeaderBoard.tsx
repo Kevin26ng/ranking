@@ -14,11 +14,15 @@ export default function LeaderBoard() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'  // Local development
+  : 'https://kroranking.onrender.com';  // Production
+
   useEffect(() => {
     const fetchDebaters = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/debaters");
+        const response = await fetch(`${BACKEND_URL}/debaters`);
         
         if (!response.ok) {
           throw new Error("Failed to fetch debaters");
@@ -60,7 +64,7 @@ export default function LeaderBoard() {
 
   const handleExportCSV = async () => {
     try {
-      const response = await fetch("http://localhost:3000/debaters/export");
+      const response = await fetch(`${BACKEND_URL}/debaters/export`);
       if (!response.ok) throw new Error("Export failed");
       
       const blob = await response.blob();

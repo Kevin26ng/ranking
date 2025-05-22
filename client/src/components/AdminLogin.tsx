@@ -11,7 +11,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onAuthenticate }) => {
   const [error, setError] = useState("")
 
     // Hardcoded backend URL
-  const BACKEND_URL = "https://kroranking.onrender.com";
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'  // Local development
+  : 'https://kroranking.onrender.com';  // Production
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
