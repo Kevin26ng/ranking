@@ -1,5 +1,5 @@
 // will have to figure out the backend yourself
-import { useState, useEffect } from "react";
+  import { useState, useEffect } from "react";
 import { Plus, RefreshCw, Edit, Trash2, X, Check } from "lucide-react";
 import Alert from "./Alert";
 
@@ -22,57 +22,9 @@ interface AlertState {
   message: string;
 }
 
-
- const BACKEND_URL = "https://kroranking.onrender.com";
-
-// Add this authFetch utility function at the top level
-async function authFetch(input: RequestInfo, init?: RequestInit) {
-  const token = localStorage.getItem('authToken');
-  
-  try {
-    // First attempt
-    let response = await fetch(input, {
-      ...init,
-      headers: {
-        ...init?.headers,
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      credentials: 'include'
-    });
-
-    // If token expired (401), try to refresh
-    if (response.status === 401) {
-      const refreshResponse = await fetch(`${BACKEND_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      if (!refreshResponse.ok) {
-        throw new Error('Session expired. Please login again.');
-      }
-
-      const { token: newToken } = await refreshResponse.json();
-      localStorage.setItem('authToken', newToken);
-
-      // Retry with new token
-      response = await fetch(input, {
-        ...init,
-        headers: {
-          ...init?.headers,
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${newToken}`,
-        },
-        credentials: 'include'
-      });
-    }
-
-    return response;
-  } catch (err) {
-    console.error('API call failed:', err);
-    throw err;
-  }
-}
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://kroranking.onrender.com';
 
 export default function AdminPanel() {
   const [debaters, setDebaters] = useState<Debater[]>([]);
@@ -91,18 +43,13 @@ export default function AdminPanel() {
   const [alert, setAlert] = useState<AlertState | null>(null);
 
   useEffect(() => {
-    // Check token validity on mount
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      showAlert('error', 'Please login first');
-    }
     fetchDebaters();
   }, []);
 
   const fetchDebaters = async () => {
     try {
       setLoading(true);
-      const response = await authFetch(`${BACKEND_URL}/debaters`);
+      const response = await fetch(`${BACKEND_URL}/debaters`);
       
       if (!response.ok) {
         throw new Error("Failed to fetch debaters");
@@ -112,10 +59,7 @@ export default function AdminPanel() {
       setDebaters(data);
     } catch (err) {
       console.error("Error fetching debaters:", err);
-      showAlert("error", err.message.includes("token") ? 
-        "Session expired. Please login again." : 
-        "Failed to load debaters. Please try again later."
-      );
+      showAlert("error", "Failed to load debaters. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -133,8 +77,11 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch(`${BACKEND_URL}/debaters`, {
+      const response = await fetch(`${BACKEND_URL}/debaters`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(newDebater),
       });
 
@@ -147,10 +94,7 @@ export default function AdminPanel() {
       showAlert("success", "Debater added successfully");
     } catch (err) {
       console.error("Error adding debater:", err);
-      showAlert("error", err.message.includes("token") ? 
-        "Session expired. Please login again." : 
-        "Failed to add debater. Please try again."
-      );
+      showAlert("error", "Failed to add debater. Please try again.");
     }
   };
 
@@ -159,8 +103,11 @@ export default function AdminPanel() {
       const debater = debaters.find((d) => d._id === id);
       if (!debater) return;
 
-      const response = await authFetch(`${BACKEND_URL}/debaters/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/debaters/${id}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ name: debater.name, rating: newRating }),
       });
 
@@ -172,10 +119,7 @@ export default function AdminPanel() {
       showAlert("success", "Rating updated successfully");
     } catch (err) {
       console.error("Error updating debater:", err);
-      showAlert("error", err.message.includes("token") ? 
-        "Session expired. Please login again." : 
-        "Failed to update rating. Please try again."
-      );
+      showAlert("error", "Failed to update rating. Please try again.");
     }
   };
 
@@ -196,32 +140,25 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch(`${BACKEND_URL}/debaters/${editingDebater}`, {
+      const response = await fetch(`${BACKEND_URL}/debaters/${editingDebater}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(editForm),
       });
-      console.log("Response Status:", response.status);
 
-      const data = await response.json();
-       console.log("Response Data:", data);
-       
-      if (!response.ok) throw new Error(data.error || "Update failed");
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Update failed");
+      }
 
       await fetchDebaters();
       setEditingDebater(null);
       showAlert("success", "Debater updated successfully");
     } catch (err) {
       console.error("Update error:", err);
-       console.log("Error Details:", {
-      message: err.message,
-      stack: err.stack
-    });
-
-
-      showAlert("error", err.message.includes("token") ? 
-        "Session expired. Please login again." : 
-        "Failed to update debater. Please try again."
-      );
+      showAlert("error", "Failed to update debater. Please try again.");
     }
   };
 
@@ -231,7 +168,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await authFetch(`${BACKEND_URL}/debaters/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/debaters/${id}`, {
         method: "DELETE",
       });
 
@@ -243,110 +180,84 @@ export default function AdminPanel() {
       showAlert("success", "Debater deleted successfully");
     } catch (err) {
       console.error("Error deleting debater:", err);
-      showAlert("error", err.message.includes("token") ? 
-        "Session expired. Please login again." : 
-        "Failed to delete debater. Please try again."
-      );
+      showAlert("error", "Failed to delete debater. Please try again.");
     }
   };
 
-
-   const handleDebateResultChange = (field: keyof DebateResult, index: number | null, value: any) => {
+  const handleDebateResultChange = (field: keyof DebateResult, index: number | null, value: any) => {
     if (index !== null && Array.isArray(debateResult[field])) {
-      const newArray = [...(debateResult[field] as any[])]
-      newArray[index] = value
-      setDebateResult({ ...debateResult, [field]: newArray })
+      const newArray = [...(debateResult[field] as any[])];
+      newArray[index] = value;
+      setDebateResult({ ...debateResult, [field]: newArray });
     } else {
-      setDebateResult({ ...debateResult, [field]: value })
+      setDebateResult({ ...debateResult, [field]: value });
     }
-     }
+  };
 
   const calculateNewRatings = async () => {
-     const token = localStorage.getItem("authToken")
-    // Validate that all debaters are selected
-    const govTeamValid = debateResult.govTeam.every((id) => id !== "")
-    const oppTeamValid = debateResult.oppTeam.every((id) => id !== "")
+    const govTeamValid = debateResult.govTeam.every((id) => id !== "");
+    const oppTeamValid = debateResult.oppTeam.every((id) => id !== "");
 
     if (!govTeamValid || !oppTeamValid) {
-      showAlert("error", "Please select all debaters for both teams")
-      return
+      showAlert("error", "Please select all debaters for both teams");
+      return;
     }
 
-       // This is a simplified version of the ELO calculation
-    const K = 20 // K-factor as specified in requirements
-
-    // Get the debaters
+    const K = 20;
     const govDebaters = debateResult.govTeam
-        .map((id) => debaters.find((d) => d._id === id))
-        .filter(Boolean) as Debater[]
-
+      .map((id) => debaters.find((d) => d._id === id))
+      .filter(Boolean) as Debater[];
     const oppDebaters = debateResult.oppTeam
-        .map((id) => debaters.find((d) => d._id === id))
-        .filter(Boolean) as Debater[]
+      .map((id) => debaters.find((d) => d._id === id))
+      .filter(Boolean) as Debater[];
 
-    // Calculate team ratings
-    const govTotalRating = govDebaters.reduce((sum, d) => sum + d.rating, 0)
-    const oppTotalRating = oppDebaters.reduce((sum, d) => sum + d.rating, 0)
+const govAvg = govDebaters.reduce((sum, d) => sum + d.rating, 0) / govDebaters.length;
+const oppAvg = oppDebaters.reduce((sum, d) => sum + d.rating, 0) / oppDebaters.length;
 
-     // Calculate expected win probabilities
-    const govExpWin = 1 / (1 + Math.pow(10, (oppTotalRating - govTotalRating) / 400))
-    const oppExpWin = 1 / (1 + Math.pow(10, (govTotalRating - oppTotalRating) / 400))
-
-    // Calculate result (1 for win, 0 for loss)
-    const govResult = debateResult.verdict === "gov" ? 1 : 0
-    const oppResult = debateResult.verdict === "opp" ? 1 : 0
-
-    // Update ratings for each debater
     try {
-      // Update government team ratings
+      // Update government team
       for (let i = 0; i < govDebaters.length; i++) {
-        const debater = govDebaters[i]
-        const expectedSpeakerScore = 75 + Math.floor((debater.rating - 1200) / 100)
-        const actualSpeakerScore = debateResult.govScores[i]
-
-           const newRating = Math.round(
-            debater.rating + K * (govResult - govExpWin) + 1.5 * (actualSpeakerScore - expectedSpeakerScore),
-        )
+        const debater = govDebaters[i];
+        const expected = 1 / (1 + 10 ** ((oppAvg - debater.rating) / 400));
+        const scoreDiff = debateResult.govScores[i] - 75;
+        const newRating = Math.round(
+          debater.rating + K * ((debateResult.verdict === 'gov' ? 1 : 0) - expected) + scoreDiff * 0.3
+        );
 
         await fetch(`${BACKEND_URL}/debaters/${debater._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({ name: debater.name, rating: newRating }),
-
-               })
+        });
       }
 
-      // Update opposition team ratings
+      // Update opposition team
       for (let i = 0; i < oppDebaters.length; i++) {
-        const debater = oppDebaters[i]
-        const expectedSpeakerScore = 75 + Math.floor((debater.rating - 1200) / 100)
-        const actualSpeakerScore = debateResult.oppScores[i]
-
-           const newRating = Math.round(
-            debater.rating + K * (oppResult - oppExpWin) + 1.5 * (actualSpeakerScore - expectedSpeakerScore),
-        )
+        const debater = oppDebaters[i];
+        const expected = 1 / (1 + 10 ** ((govAvg - debater.rating) / 400));
+        const scoreDiff = debateResult.oppScores[i] - 75;
+        const newRating = Math.round(
+          debater.rating + K * ((debateResult.verdict === 'opp' ? 1 : 0) - expected) + scoreDiff * 0.3
+        );
 
         await fetch(`${BACKEND_URL}/debaters/${debater._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-             "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({ name: debater.name, rating: newRating }),
-        })
+        });
       }
 
-    await fetchDebaters()
-      showAlert("success", "Ratings updated successfully")
+      await fetchDebaters();
+      showAlert("success", "Ratings updated successfully");
     } catch (err) {
-      console.error("Error updating ratings:", err)
-      showAlert("error", "Failed to update ratings. Please try again.")
+      console.error("Error updating ratings:", err);
+      showAlert("error", "Failed to update ratings. Please try again.");
     }
-  }
-
+  };
 
   return (
       <div className="admin-panel">

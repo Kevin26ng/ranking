@@ -8,6 +8,10 @@ interface TopDebater {
   rating: number
 }
 
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'  // Local development
+  : 'https://kroranking.onrender.com';  // Production
+
 export default function Hero() {
   const [topDebater, setTopDebater] = useState<TopDebater | null>(null)
   const [loading, setLoading] = useState(true)
@@ -16,7 +20,7 @@ export default function Hero() {
     const fetchTopDebater = async () => {
       try {
         setLoading(true)
-        const response = await fetch("http://localhost:3000/debaters") 
+        const response = await fetch(`${BACKEND_URL}/debaters`) 
 
         if (!response.ok) {
           throw new Error("Failed to fetch debaters")
