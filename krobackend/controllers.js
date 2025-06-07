@@ -1,4 +1,4 @@
-import { Debater, Match } from "./models.js";
+import { Debater, Match,Adjudicator } from "./models.js";
 
 // 1. Get all debaters
 export const getAllDebaters = async (req, res) => {
@@ -109,5 +109,73 @@ export const submitMatchResult = async (req, res) => {
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// =============== Adjudicator Controllers ===============
+
+// 1. Get all adjudicators
+export const getAllAdjudicators = async (req, res) => {
+  try {
+    // Sort by rating descending
+    const adjudicators = await Adjudicator.find().sort({ rating: -1 });
+    res.status(200).json(adjudicators);
+  } catch (error) {
+    console.error("Get all adjudicators error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// 2. Create a new adjudicator
+export const createAdjudicator = async (req, res) => {
+  try {
+    const { name, rating, verdictAccuracy, feedbackScore } = req.body;
+    const newAdjudicator = new Adjudicator({ name, rating, verdictAccuracy, feedbackScore });
+    await newAdjudicator.save();
+    res.status(201).json(newAdjudicator);
+  } catch (error) {
+    console.error("Create adjudicator error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// 3. Get single adjudicator by ID
+export const getAdjudicatorById = async (req, res) => {
+  try {
+    const adjudicator = await Adjudicator.findById(req.params.id);
+    if (!adjudicator) return res.status(404).json({ error: "Adjudicator not found" });
+    res.status(200).json(adjudicator);
+  } catch (error) {
+    console.error("Get adjudicator by ID error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// 4. Update adjudicator by ID
+export const updateAdjudicator = async (req, res) => {
+  try {
+    const updates = req.body;
+    const updatedAdjudicator = await Adjudicator.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      { new: true }
+    );
+    if (!updatedAdjudicator) return res.status(404).json({ error: "Adjudicator not found" });
+    res.status(200).json(updatedAdjudicator);
+  } catch (error) {
+    console.error("Update adjudicator error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// 5. Delete adjudicator by ID
+export const deleteAdjudicator = async (req, res) => {
+  try {
+    const deletedAdjudicator = await Adjudicator.findByIdAndDelete(req.params.id);
+    if (!deletedAdjudicator) return res.status(404).json({ error: "Adjudicator not found" });
+    res.status(200).json({ message: "Adjudicator deleted" });
+  } catch (error) {
+    console.error("Delete adjudicator error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };

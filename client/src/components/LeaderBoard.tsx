@@ -7,7 +7,7 @@ interface Debater {
   rating: number;
   change?: number;
 }
-
+ 
 export default function LeaderBoard() {
   const [rankings, setRankings] = useState<Debater[]>([]);
   const [loading, setLoading] = useState(true);

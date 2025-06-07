@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Blog from './pages/Blog';
 import Docs from './pages/Docs';
-import LeaderBoard from './components/LeaderBoard';
+import LeaderBoard from './components/CombinedLeaderboard';
 
 
 function App() {

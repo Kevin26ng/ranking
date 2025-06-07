@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Crown, ChevronRight } from "lucide-react"
-import { Link } from "react-router-dom" // Assuming you're using React Router
+import { Link } from "react-router-dom" 
 
 interface TopDebater {
   _id: string

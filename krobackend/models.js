@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Only keep Debater and Match models
 const DebaterSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  rating: { type: Number, default: 1200 },
+  rating: { type: Number, default: 69.0 },
 });
 
 const MatchSchema = new mongoose.Schema({
@@ -33,6 +33,35 @@ AdminSchema.pre('save', async function(next) {
 });
 
 
+const AdjudicatorSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 10,
+    default: 5
+  },
+  verdictAccuracy: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 1,
+    default: 0.5
+  },
+  feedbackScore: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 10,
+    default: 5
+  }
+}); 
+
+
+
+
 export const Debater = mongoose.model('Debater', DebaterSchema);
 export const Match = mongoose.model('Match', MatchSchema);
 export const Admin = mongoose.model('Admin', AdminSchema);
+export const Adjudicator = mongoose.model('Adjudicator', AdjudicatorSchema);
